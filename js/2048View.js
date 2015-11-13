@@ -10,7 +10,7 @@ var colorMap = {
   512: "#E4BF26",
   1024: "#E1BA2C",
   2048: "#EAC23E",
-}
+};
 
 var TwenyFortyBoard = React.createClass({
   getInitialState: function() {
@@ -35,7 +35,7 @@ var TwenyFortyBoard = React.createClass({
 
     for (var idx = 0; idx < 16; idx++) {
       number = "";
-      className= "tile"
+      className= "tile";
       style = {};
       numberStyle = {};
 
@@ -58,7 +58,7 @@ var TwenyFortyBoard = React.createClass({
   render: function() {
     return (
       <ul>{this.createTiles()}</ul>
-    )
+    );
   }
 
 });

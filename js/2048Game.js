@@ -1,18 +1,39 @@
 var TwentyFortyGame = window.TwentyFortyGame = window.TwentyFortyGame || {};
 
-TwentyFortyGame = function() {
-  this.grid = [];
-  //populate grid
-  for (var idx = 0; idx < 4; idx++) {
-    var row = [];
-    for (var idy = 0; idy < 4; idy++) {
-      row.push(0);
-    }
-    this.grid.push(row);
-  }
-  this.setInitialState();
+TwentyFortyGame = function(grid) {
+  this.grid = grid;
 
+  if (typeof grid === "undefined") {
+    //create new generic grid
+    this.grid = [];
+    for (var idx = 0; idx < 4; idx++) {
+      var row = [];
+      for (var idy = 0; idy < 4; idy++) {
+        row.push(0);
+      }
+      this.grid.push(row);
+    }
+
+    //set up initial random tiles
+    this.setInitialState();
+  }
 };
+
+TwentyFortyGame.prototype.dup = function() {
+  var newGrid = this.grid.map(function(row){
+    return row.slice();
+  });
+  return new TwentyFortyGame(newGrid);
+};
+
+TwentyFortyGame.prototype.currentScore = function() {
+  var sum = 0;
+  this.allTiles().forEach(function(tile){
+    sum += tile;
+  });
+  return sum;
+};
+
 
 TwentyFortyGame.prototype.rotateGrid = function() {
   var rotatedGrid = [];
@@ -45,7 +66,7 @@ TwentyFortyGame.prototype.callWithFlippedGrid = function(direction, func) {
       numRotations = 3;
       break;
     default:
-      numRotations = 0
+      numRotations = 0;
   }
   this.rotateGridNTimes(numRotations);
 
@@ -66,19 +87,23 @@ TwentyFortyGame.prototype.allTiles = function() {
 TwentyFortyGame.prototype.combineAllRows = function() {
   var newGrid = [];
   for (var idx = 0; idx < this.grid.length; idx++) {
-    newGrid.push(this.combineRow(this.grid[idx]))
+    newGrid.push(this.combineRow(this.grid[idx]));
   }
   this.grid = newGrid;
-}
+};
 
 TwentyFortyGame.prototype.moveInDirection = function(direction) {
-  var prevGridState = this.grid.toString();
   this.callWithFlippedGrid(direction, this.combineAllRows.bind(this));
+};
+
+TwentyFortyGame.prototype.makeMoveInDirection = function(direction) {
+  var prevGridState = this.grid.toString();
+
+  this.moveInDirection(direction);
 
   if (this.grid.toString() !== prevGridState) {
     this.placeRandomTiles(1);
   }
-
   this.viewCallback();
 };
 
@@ -119,7 +144,7 @@ TwentyFortyGame.prototype.combineActiveTiles = function (activeTiles) {
 
 TwentyFortyGame.prototype.log = function () {
   this.grid.forEach(function(row){
-    console.log(row)
+    console.log(row);
   });
 };
 
@@ -149,8 +174,8 @@ TwentyFortyGame.prototype.placeRandomTiles = function (n) {
   for (var idx = 0; idx < n; idx++) {
 
     var randomTile = this.randomEmptyTile(),
-        row = randomTile[0]
-        tile = randomTile[1]
+        row = randomTile[0];
+        tile = randomTile[1];
 
     this.grid[row][tile] = this.randomValue();
   }
@@ -161,4 +186,21 @@ TwentyFortyGame.prototype.randomValue = function () {
   var randomInt = Math.floor(Math.random() * 10);
 
   return randomInt > 2 ? 2 : 4;
+};
+
+TwentyFortyGame.prototype.over = function () {
+  return this.allTiles().every(function(tile){
+    return tile !== 0;
+  });
+};
+
+
+TwentyFortyGame.prototype.numActiveTiles = function() {
+  var count = 0;
+  this.allTiles().forEach(function(tile){
+    if (tile !== 0) {
+      count += 1;
+    }
+  });
+  return count;
 };
